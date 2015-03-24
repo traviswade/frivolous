@@ -1,0 +1,13 @@
+{application, frivolous,
+[
+    {description, "various parse transforms"},
+    {vsn, "0.1"},
+    {modules, [
+        frivolous,
+        frivolous_cut,
+        frivolous_pipe
+    ]},
+    {registered, []},
+    {applications, []},
+    {env, []}
+]}.

@@ -7,6 +7,9 @@ f2 ({A,B}, [H|T], X) -> {B, H, [A+X|T]}.
 
 add (A, B) -> A + B.
 double (Val) -> Val * 2.
+
+identity (F, Arg) -> F(Arg).
+
  
 -include_lib("eunit/include/eunit.hrl").
  
@@ -23,3 +26,6 @@ pipe_test () ->
 	?assertEqual(25, 10 / double / add(5,_)),
 	?assertEqual(3, [1, 2, 3] / (fun lists:max/1)),
 	?assertEqual(3.0, 6/2).
+	
+smart_pipe_test () ->
+	?assertEqual(16, identity > 2 / double / double / double).

@@ -2,6 +2,8 @@
 
 -export([parse_transform/2]).
 
+-import(erl_syntax, [type/1]).
+
 parse_transform (Forms, Opts) -> 
 	erl_syntax:revert_forms(do_transforms(erl_syntax:form_list(Forms), Opts)).
 	
@@ -13,29 +15,82 @@ do_transforms (Tree, Opts) ->
 			erl_syntax:update_tree(Tree, Subtrees)
 	end, Opts).
 	
-transform (Node, Opts) -> transform(erl_syntax:type(Node), Node, Opts).
+transform (Node, Opts) -> transform(type(Node), Node, Opts).
 
 transform (infix_expr, Node, Opts) ->
 	case erl_syntax:operator_name(erl_syntax:infix_expr_operator(Node)) of
 		'/' -> maybe_do_application(Node, Opts);
+		'>' -> maybe_do_bind(Node, Opts);
 		_   -> Node
 	end;
 
 transform (_, Node, _)    -> Node.
 
-% % node is '/' operator
-maybe_do_application(Node, Opts) ->
+
+% basic pipe will get transformed to application first. mark them for re-processing
+% as funs if we do a bind on the way back up. 
+% actually maybe not. why would we be comparing a function/atom/tuple to an application?
+% actually let's put in an option, whether
+% maybe > f(g(h(x))) works like maybe > x / h / g / f
+
+maybe_do_application (Node, Opts) ->
 	[Val, _Pipe, F] = lists:append(erl_syntax:subtrees(Node)),
-	case erl_syntax:type(F) of
+	case type(F) of
 		atom          ->  do_application(Node, F, Val, Opts);
 		fun_expr      ->  do_application(Node, F, Val, Opts);	
-		implicit_fun  ->  do_application(Node, F, Val, Opts);		
-		Other         ->  
-			io:format("not transforming: ~p~n", [Other]),
-			Node
+		implicit_fun  ->  do_application(Node, F, Val, Opts);
+		% tuple         -> TODO   		
+		_             ->  Node
 	end.
 	
 do_application (OrigNode, F, Val, Opts) ->
-	frivolous:show_transform(OrigNode, erl_syntax:application(F, [Val]), Opts).
+	frivolous:show_transform(OrigNode, 
+		erl_syntax:add_ann(piped, erl_syntax:application(F, [Val])), Opts).
+		
+%%%%%%%%%%% bind
+maybe_do_bind (Node, Opts) ->
+	[L, _Bind, R] = lists:append(erl_syntax:subtrees(Node)),
+	case {type(L), type(R)} of
+		{atom, application}          ->  process_bind(Node, L, R, Opts);
+		{fun_expr, application}      ->  process_bind(Node, L, R, Opts);
+		{implicit_fun, application}  ->  process_bind(Node, L, R, Opts);
+		% tuple
+		_             ->  Node
+	end.
+	
+process_bind (OrigNode, L, R, Opts) ->
+	frivolous:show_transform(OrigNode, do_bind(L, R), Opts).
+	
+do_bind (Binder, Application) ->
+	Op = erl_syntax:application_operator(Application),
+	% fail if more than one argument. what sense would that make?
+	[Arg] = erl_syntax:application_arguments(Application),
+	case type(Arg) of
+		application -> 
+			do_bind(Binder, Op, do_bind(Binder, Arg));
+		_ -> do_bind(Binder, Op, Arg)
+	end.
+
+do_bind (Binder, Operator, Arg) ->
+	erl_syntax:application(Binder, [wrap_op(Operator), Arg]).
+
+wrap_op (Op) ->
+	case type(Op) of
+		fun_expr     -> Op;
+		explicit_fun -> Op;
+		_ -> 
+			Arg = erl_syntax:variable("Arg"),
+			Application = erl_syntax:application(Op, [Arg]),
+			erl_syntax:fun_expr([erl_syntax:clause([Arg], none, [Application])])
+	end.
+		
+	
+	
+	
+	
+	
+	
+		
+
 	
 

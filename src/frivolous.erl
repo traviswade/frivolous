@@ -9,6 +9,6 @@ parse_transform (Forms, Opts) ->
 	
 
 show_transform (From, To, Opts) ->
-	io:format("~n --frivolously transforming ~n~p~n  to: ~n~p~n~n", 
+	io:format("~n --frivolously transforming ~n~s~n  to: ~n~s~n~n", 
 		[erl_prettypr:format(From), erl_prettypr:format(To)]),
 	To.

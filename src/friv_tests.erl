@@ -9,6 +9,27 @@ add (A, B) -> A + B.
 double (Val) -> Val * 2.
 
 identity (F, Arg) -> F(Arg).
+maybe (F, {ok, Val})       -> F(Val);
+maybe (_, {error, Reason}) -> {error, Reason}.
+
+f3 (Val) ->
+	if Val > 2 -> {ok, Val+1};
+		true   -> {error, lessthan2}
+	end.
+	
+f4 (5)   -> {error, hitfive};
+f4 (Val) -> {ok, Val*3}.
+
+f5 (Val) ->
+	Even = (Val rem 2 =:= 0),
+	if Even -> {ok, Val+1};
+		true -> {error, odd}
+	end.
+f6 (Val) ->
+	maybe > {ok, Val} 
+		/ f3
+		/ f4
+		/ f5.
 
  
 -include_lib("eunit/include/eunit.hrl").
@@ -29,3 +50,13 @@ pipe_test () ->
 	
 smart_pipe_test () ->
 	?assertEqual(16, identity > 2 / double / double / double).
+	
+maybe_test () ->
+	?assertEqual({error, lessthan2}, f6(2)),
+	?assertEqual({error, hitfive}, f6(4)),
+	?assertEqual({error, odd}, f6(6)),
+	?assertEqual({ok, 13}, f6(3)).
+	
+	
+	
+	

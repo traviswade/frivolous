@@ -29,9 +29,10 @@ transform (_, Node, _)    -> Node.
 
 % basic pipe will get transformed to application first. mark them for re-processing
 % as funs if we do a bind on the way back up. 
-% actually maybe not. why would we be comparing a function/atom/tuple to an application?
-% actually let's put in an option, whether
-% maybe > f(g(h(x))) works like maybe > x / h / g / f
+% reconfigure to add more options, for example
+% connector > val * f1 / f2 * f3 / f4, 
+% to skip the connector on f1 and f3.
+% Probably just store what to do with the connector right in the annotation
 
 maybe_do_application (Node, Opts) ->
 	[Val, _Pipe, F] = lists:append(erl_syntax:subtrees(Node)),
@@ -65,10 +66,11 @@ do_bind (Binder, Application) ->
 	Op = erl_syntax:application_operator(Application),
 	% fail if more than one argument. what sense would that make?
 	[Arg] = erl_syntax:application_arguments(Application),
-	case type(Arg) of
-		application -> 
+	case {type(Arg), erl_syntax:get_ann(Application)} of
+		{application, [piped]} -> 
 			do_bind(Binder, Op, do_bind(Binder, Arg));
-		_ -> do_bind(Binder, Op, Arg)
+		_ -> 
+			do_bind(Binder, Op, Arg)
 	end.
 
 do_bind (Binder, Operator, Arg) ->

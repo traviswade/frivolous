@@ -6,9 +6,18 @@ parse_transform (Forms, Opts) ->
 	frivolous_pipe:parse_transform(
 		frivolous_cut:parse_transform(Forms, Opts), Opts).
 	% frivolous_pipe:parse_transform(frivolous_cut:parse_transform(Forms, Opts), Opts).
-	
+
+get_opts (Raw) ->
+	case proplists:get_value(frivolous, Raw) of
+		Opts when is_list(Opts) -> Opts;
+		_ -> []
+	end.
 
 show_transform (From, To, Opts) ->
-	io:format("~n --frivolously transforming ~n~s~n  to: ~n~s~n~n", 
-		[erl_prettypr:format(From), erl_prettypr:format(To)]),
+	case proplists:get_value(verbose, get_opts(Opts)) of
+		true -> 
+			io:format("~n --frivolously transforming ~n~s~n  to: ~n~s~n~n", 
+				[erl_prettypr:format(From), erl_prettypr:format(To)]);
+		_ -> ok
+	end,
 	To.

@@ -30,7 +30,7 @@ process_cut (Node, Opts) ->
 		fun (Tree, {AccPatterns, AccArgs}) ->
 			case erl_syntax:type(Tree) of
 				underscore -> 
-					Var = erl_syntax:variable("Arg"++integer_to_list(length(AccArgs))),
+					Var = erl_syntax:variable("Arg"++integer_to_list(length(AccArgs)+1)),
 					{[Var|AccPatterns], [Var|AccArgs]};
 				_  -> 
 					{AccPatterns, [Tree|AccArgs]}

@@ -6,6 +6,7 @@ f1 (A, B) -> A * B.
 f2 ({A,B}, [H|T], X) -> {B, H, [A+X|T]}.
 
 add (A, B) -> A + B.
+add (Val) -> fun (Val1) -> Val + Val1 end.
 double (Val) -> Val * 2.
 
 identity (F, Arg) -> F(Arg).
@@ -20,16 +21,20 @@ f3 (Val) ->
 f4 (5)   -> {error, hitfive};
 f4 (Val) -> {ok, Val*3}.
 
+f4b (5) -> error;
+f4b (Val) -> Val * 3.
+
 f5 (Val) ->
 	Even = (Val rem 2 =:= 0),
 	if Even -> {ok, Val+1};
 		true -> {error, odd}
 	end.
-f6 (Val) ->
-	maybe > {ok, Val} 
-		/ f3
-		/ f4
-		/ f5.
+f6 (Val) -> maybe + Val * f3 / f4 / f5.
+f6b (Val) -> maybe + {ok, Val} 
+	/ f3 
+	/ f4 
+	/ f5.
+	
 
  
 -include_lib("eunit/include/eunit.hrl").
@@ -49,13 +54,28 @@ pipe_test () ->
 	?assertEqual(3.0, 6/2).
 	
 smart_pipe_test () ->
-	?assertEqual(16, identity > 2 / double / double / double).
+	?assertEqual(16, identity + 2 / double / double / double),
+	?assertEqual(16, identity + 2 / double * double * double).
 	
 maybe_test () ->
 	?assertEqual({error, lessthan2}, f6(2)),
 	?assertEqual({error, hitfive}, f6(4)),
 	?assertEqual({error, odd}, f6(6)),
-	?assertEqual({ok, 13}, f6(3)).
+	?assertEqual({ok, 13}, f6(3)),
+	?assertEqual({ok, 13}, f6b(3)).
+	
+tuple_pipe_test () ->
+	F = fun (Val) -> Val + 1 end,
+	?assertEqual(5, 4 / {F}),
+	?assertEqual(12, 4 / {add(2)} / double),
+	Skimmer = fun (Fun, Val) -> Fun(Val-1) end,
+	?assertEqual(14, {Skimmer} + 5 / double / double),
+	?assertEqual(16, {Skimmer} + 5 / double * double),
+	Bad = 1,
+	?assertError(_, {Bad} + 5 / double / double).
+	
+doc_test () ->
+	?assertEqual({ok, 13}, maybe + 3 * f3 / f4b * f5).
 	
 	
 	

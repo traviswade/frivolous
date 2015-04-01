@@ -22,9 +22,6 @@ transform (application, Node, Opts) ->
 	end;
 transform (_, Node, _) -> Node.
 
-% Take an application node and turn it into a fun_expr taking
-% the underscores as arguments filling them into the original application
-% e.g. a(1, _) becomes fun (Arg1) -> a(1, Arg1) end.
 process_cut (Node, Opts) -> 
 	{Patterns, Args} = lists:foldl(
 		fun (Tree, {AccPatterns, AccArgs}) ->

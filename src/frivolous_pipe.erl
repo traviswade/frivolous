@@ -32,7 +32,7 @@ transform (_, Node, _)    -> Node.
 % as funs if we do a bind on the way back up. 
 
 maybe_do_application (Node, Opts, Annotation) ->
-	[Val, _Pipe, F] = lists:append(erl_syntax:subtrees(Node)),
+	[Val, _Op, F] = lists:append(erl_syntax:subtrees(Node)),
 	DoApplication = fun (ToApply) ->
 		Node1 = erl_syntax:add_ann({pipe, Annotation}, erl_syntax:application(ToApply, [Val])),
 		frivolous:show_transform(Node, Node1, Opts) end,

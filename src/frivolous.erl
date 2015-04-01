@@ -3,9 +3,9 @@
 -export([parse_transform/2, show_transform/3]).
 
 parse_transform (Forms, Opts) ->
-	frivolous_pipe:parse_transform(
-		frivolous_cut:parse_transform(Forms, Opts), Opts).
-	% frivolous_pipe:parse_transform(frivolous_cut:parse_transform(Forms, Opts), Opts).
+	frivolous_case:parse_transform(
+		frivolous_pipe:parse_transform(
+			frivolous_cut:parse_transform(Forms, Opts), Opts), Opts).
 
 get_opts (Raw) ->
 	case proplists:get_value(frivolous, Raw) of

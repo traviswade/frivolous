@@ -34,9 +34,8 @@ f6b (Val) -> maybe + {ok, Val}
 	/ f3 
 	/ f4 
 	/ f5.
-	
 
- 
+
 -include_lib("eunit/include/eunit.hrl").
  
 cut_test () -> 
@@ -76,6 +75,23 @@ tuple_pipe_test () ->
 	
 doc_test () ->
 	?assertEqual({ok, 13}, maybe + 3 * f3 / f4b * f5).
+
+case_test () ->
+	A = 10,
+	?assertEqual(a, case A+1 of
+		9 or 10 or 11 -> a;
+		_ -> b
+	end),
+	?assertEqual(b, case A+2 of
+		9 or 10 or 11 -> a;
+		12 -> b;
+		_ -> c
+	end),
+	?assertEqual(b, case A+1 of
+		9 -> a;
+		10 -> a;
+		_ -> b
+	end).
 	
 	
 	

@@ -1,4 +1,5 @@
 Some simple Erlang parse transforms. 
+
 All of the transforms use the functions in the [erl_syntax](http://erlang.org/doc/man/erl_syntax.html)
 module rather than pattern matching on syntax trees. This should mean that they will work
 in future versions of the language, but you never know.
@@ -6,7 +7,7 @@ in future versions of the language, but you never know.
 ###Cuts
 
 Works like the most basic of the cuts in [erlando](https://github.com/rabbitmq/erlando),
-which were inspired by [scheme](). Turns an application including
+which were inspired by [scheme](http://srfi.schemers.org/srfi-26/srfi-26.html). Turns an application including
 one or more `_` arguments into a `fun` that takes the missing items as arguments.
 
 	f(X, _, Y, _).
@@ -26,7 +27,8 @@ becomes
 
 	f(g(X))
 	
-Atoms, funs and implicit fun expressions are allowed in the function position. Variables and function
+Atoms, funs, module qualifiers and implicit fun expressions 
+are all allowed in the function position. Variables and function
 applications will also work if wrapped in curly braces.
 
 	Even = lists:filter(fun (X) -> X rem 2 =:= 0 end, _),
@@ -34,7 +36,8 @@ applications will also work if wrapped in curly braces.
 		/ list_to_integer
 		/ {lists:seq(1, _)}
 		/ {Even}
-		/ fun lists:max/1
+		/ fun lists:sort/1
+		/ lists:max
 		/ fun (_) -> "why would you do that" end.
 
 
@@ -106,6 +109,27 @@ becomes
 	  z -> 0;
 	  _ -> 1;
 	end
+	
+Works with more complex patterns too, but make sure that all variables referenced in the
+body are bound in _each_ pattern. Any guards are also copied to each clause.
+
+	case A of
+		#usr{id=Id} or {id, Id} or Id 
+		when is_binary(Id) -> 
+			{ok, Id};
+		_ -> 
+			{error, noid}
+	end
+	
+becomes
+
+	case A of
+		#usr{id=Id} when is_binary(Id) -> {ok, Id};
+		{id, Id}    when is_binary(Id) -> {ok, Id};
+		Id          when is_binary(Id) -> {ok, Id};
+		_                              -> {error, noid}
+	end
+		
 
 
 ###Use

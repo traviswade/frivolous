@@ -37,25 +37,29 @@ maybe_do_application (Node, Opts, Annotation) ->
 		Node1 = erl_syntax:add_ann({pipe, Annotation}, erl_syntax:application(ToApply, [Val])),
 		frivolous:show_transform(Node, Node1, Opts) end,
 	case type(F) of
-		atom          ->  DoApplication(F);
-		fun_expr      ->  DoApplication(F);	
-		implicit_fun  ->  DoApplication(F);
-		tuple         ->  
+		atom             ->  DoApplication(F);
+		fun_expr         ->  DoApplication(F);	
+		implicit_fun     ->  DoApplication(F);
+		module_qualifier ->  DoApplication(F);
+		tuple            ->  
 			case check_tuple(F) of
 				{ok, El} -> DoApplication(El);
 				_        -> Node
 			end;
-		_             ->  Node
+		Other            ->  
+			io:format("other operator: ~p~n", [Other]),
+			Node
 	end.
 	
 %%%%%%%%%%% bind
 maybe_do_bind (Node, Opts) ->
 	[L, _Bind, R] = lists:append(erl_syntax:subtrees(Node)),
 	case {type(L), type(R)} of
-		{atom, application}          ->  process_bind(Node, L, R, Opts);
-		{fun_expr, application}      ->  process_bind(Node, L, R, Opts);
-		{implicit_fun, application}  ->  process_bind(Node, L, R, Opts);
-		{tuple, application}         ->  
+		{atom, application}             ->  process_bind(Node, L, R, Opts);
+		{fun_expr, application}         ->  process_bind(Node, L, R, Opts);
+		{implicit_fun, application}     ->  process_bind(Node, L, R, Opts);
+		{module_qualifier, application} ->  process_bind(Node, L, R, Opts);
+		{tuple, application}            ->  
 			case check_tuple(L) of
 				{ok, El} -> process_bind(Node, El, R, Opts);
 				_        -> Node

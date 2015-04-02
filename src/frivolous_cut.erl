@@ -3,6 +3,7 @@
 -export([parse_transform/2]).
 
 parse_transform (Forms, Opts) ->
+	io:format("Opts: ~p~n", [Opts]),
 	erl_syntax:revert_forms(do_transforms(erl_syntax:form_list(Forms), Opts)).
 	
 do_transforms (Tree, Opts) ->

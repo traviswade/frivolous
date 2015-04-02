@@ -1,5 +1,7 @@
 -module(friv_tests).
 
+-export([f3/1, maybe/2]).
+
 -compile({parse_transform, frivolous}).
  
 f1 (A, B) -> A * B.
@@ -30,8 +32,8 @@ f5 (Val) ->
 		true -> {error, odd}
 	end.
 f6 (Val) -> maybe + Val * f3 / f4 / f5.
-f6b (Val) -> maybe + {ok, Val} 
-	/ f3 
+f6b (Val) -> friv_tests:maybe + {ok, Val} 
+	/ friv_tests:f3 
 	/ f4 
 	/ f5.
 
@@ -91,7 +93,15 @@ case_test () ->
 		9 -> a;
 		10 -> a;
 		_ -> b
+	end),
+	?assertEqual({ok, 4}, case [4, 5] of
+		{num, N} or [N|_] 
+			when is_integer(N) -> {ok, N};
+		_ -> {error, notint}
 	end).
+	
+nother_pipe_test () ->
+	[1, 2, 3] / lists:max.
 	
 	
 	

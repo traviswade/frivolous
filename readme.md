@@ -34,12 +34,14 @@ applications will also work if wrapped in curly braces.
 	Even = lists:filter(fun (X) -> X rem 2 =:= 0 end, _),
 	"400"
 		/ list_to_integer
-		/ {lists:seq(1, _)}
+		/ lists:seq(1, _)
 		/ {Even}
 		/ fun lists:sort/1
 		/ lists:max
 		/ fun (_) -> "why would you do that" end.
 
+Note that applications with cuts don't need to be wrapped since the cut transform is evaluated first,
+resulting in a fun expression.
 
 ###Smarter Pipes
 

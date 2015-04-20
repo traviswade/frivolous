@@ -47,7 +47,6 @@ maybe_do_application (Node, Opts, Annotation) ->
 				_        -> Node
 			end;
 		Other            ->  
-			io:format("other operator: ~p~n", [Other]),
 			Node
 	end.
 	

@@ -116,11 +116,10 @@ Works with more complex patterns too, but make sure that all variables reference
 body are bound in _each_ pattern. Any guards are also copied to each clause.
 
 	case A of
-		#usr{id=Id} or {id, Id} or Id 
-		when is_binary(Id) -> 
-			{ok, Id};
-		_ -> 
-			{error, noid}
+		#usr{id=Id} 
+		or {id, Id} 
+		or Id       when is_binary(Id) -> {ok, Id};
+		_                              -> {error, noid}
 	end
 	
 becomes

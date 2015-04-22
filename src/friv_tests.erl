@@ -103,6 +103,9 @@ case_test () ->
 nother_pipe_test () ->
 	[1, 2, 3] / lists:max.
 	
+complex_bind_test () ->
+	?assertEqual(12, identity + double(5) / {add(2)}).
+	
 	
 	
 	

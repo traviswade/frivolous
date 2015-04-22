@@ -53,6 +53,8 @@ maybe_do_application (Node, Opts, Annotation) ->
 %%%%%%%%%%% bind
 maybe_do_bind (Node, Opts) ->
 	[L, _Bind, R] = lists:append(erl_syntax:subtrees(Node)),
+	
+	
 	case {type(L), type(R)} of
 		{atom, application}             ->  process_bind(Node, L, R, Opts);
 		{fun_expr, application}         ->  process_bind(Node, L, R, Opts);
@@ -79,7 +81,10 @@ do_bind (Binder, Application) ->
 	case check_annotation(Application) of
 		run  -> do_bind(Binder, Op, Arg1);
 		skip -> erl_syntax:application(Op, [Arg1]);
-		_    -> throw("missing annotation in application bind")
+		_    -> 
+			% no annotation available. we must be at the end. 
+			% for example we could have passed an application into the function
+			Application
 	end.
 
 do_bind (Binder, Operator, Arg) ->

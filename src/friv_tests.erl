@@ -3,7 +3,13 @@
 -export([f3/1, maybe/2]).
 
 -compile({parse_transform, frivolous}).
- 
+
+forcey () -> [
+  frivolous_case:module_info(exports),
+  frivolous_pipe:module_info(exports),
+  frivolous_cut:module_info(exports)
+  ].
+
 f1 (A, B) -> A * B.
 f2 ({A,B}, [H|T], X) -> {B, H, [A+X|T]}.
 
@@ -19,7 +25,7 @@ f3 (Val) ->
 	if Val > 2 -> {ok, Val+1};
 		true   -> {error, lessthan2}
 	end.
-	
+
 f4 (5)   -> {error, hitfive};
 f4 (Val) -> {ok, Val*3}.
 
@@ -32,39 +38,39 @@ f5 (Val) ->
 		true -> {error, odd}
 	end.
 f6 (Val) -> maybe + Val * f3 / f4 / f5.
-f6b (Val) -> friv_tests:maybe + {ok, Val} 
-	/ friv_tests:f3 
-	/ f4 
+f6b (Val) -> friv_tests:maybe + {ok, Val}
+	/ friv_tests:f3
+	/ f4
 	/ f5.
 
 
 -include_lib("eunit/include/eunit.hrl").
- 
-cut_test () -> 
+
+cut_test () ->
 	?assertEqual(12, f1(3, 4)),
 	?assertEqual(12, (f1(3, _))(4)),
 	?assertEqual(12, (f1(_, 3))(4)),
 	?assertEqual({2, h, [11, 1]}, f2({1, 2}, [h,1], 10)),
 	?assertEqual({2, h, [11, 1]}, (f2(_, _, 10))({1, 2}, [h, 1])),
 	?assertEqual({2, h, [11, 1]}, (f2(_, [h,1], _))({1, 2}, 10)).
-	
-pipe_test () -> 
+
+pipe_test () ->
 	?assertEqual(1, 1 / fun(A)->A end),
 	?assertEqual(25, 10 / double / add(5,_)),
 	?assertEqual(3, [1, 2, 3] / (fun lists:max/1)),
 	?assertEqual(3.0, 6/2).
-	
+
 smart_pipe_test () ->
 	?assertEqual(16, identity + 2 / double / double / double),
 	?assertEqual(16, identity + 2 / double * double * double).
-	
+
 maybe_test () ->
 	?assertEqual({error, lessthan2}, f6(2)),
 	?assertEqual({error, hitfive}, f6(4)),
 	?assertEqual({error, odd}, f6(6)),
 	?assertEqual({ok, 13}, f6(3)),
 	?assertEqual({ok, 13}, f6b(3)).
-	
+
 tuple_pipe_test () ->
 	F = fun (Val) -> Val + 1 end,
 	?assertEqual(5, 4 / {F}),
@@ -74,7 +80,7 @@ tuple_pipe_test () ->
 	?assertEqual(16, {Skimmer} + 5 / double * double),
 	Bad = 1,
 	?assertError(_, {Bad} + 5 / double / double).
-	
+
 doc_test () ->
 	?assertEqual({ok, 13}, maybe + 3 * f3 / f4b * f5).
 
@@ -95,17 +101,13 @@ case_test () ->
 		_ -> b
 	end),
 	?assertEqual({ok, 4}, case [4, 5] of
-		{num, N} or [N|_] 
+		{num, N} or [N|_]
 			when is_integer(N) -> {ok, N};
 		_ -> {error, notint}
 	end).
-	
+
 nother_pipe_test () ->
 	[1, 2, 3] / lists:max.
-	
+
 complex_bind_test () ->
 	?assertEqual(12, identity + double(5) / {add(2)}).
-	
-	
-	
-	

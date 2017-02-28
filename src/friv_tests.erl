@@ -5,6 +5,7 @@
 -compile({parse_transform, frivolous_cut}).
 -compile({parse_transform, frivolous_pipe}).
 -compile({parse_transform, frivolous_case}).
+-compile({parse_transform, frivolous}).
 
 
 f1 (A, B) -> A * B.

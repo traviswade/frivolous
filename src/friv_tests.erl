@@ -2,13 +2,10 @@
 
 -export([f3/1, maybe/2]).
 
--compile({parse_transform, frivolous}).
+-compile({parse_transform, frivolous_cut}).
+-compile({parse_transform, frivolous_pipe}).
+-compile({parse_transform, frivolous_case}).
 
-forcey () -> [
-  frivolous_case:module_info(exports),
-  frivolous_pipe:module_info(exports),
-  frivolous_cut:module_info(exports)
-  ].
 
 f1 (A, B) -> A * B.
 f2 ({A,B}, [H|T], X) -> {B, H, [A+X|T]}.

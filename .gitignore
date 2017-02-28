@@ -1,3 +1,3 @@
-ebin
+_build
 .eunit
 .rebar
